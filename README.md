@@ -1,5 +1,7 @@
 # @shipitandpray/pretext-markdown
 
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://shipitandpray.github.io/pretext-markdown/) [![npm](https://img.shields.io/npm/v/@shipitandpray/pretext-markdown?color=blue)](https://www.npmjs.com/package/@shipitandpray/pretext-markdown)
+
 Markdown renderer that knows the exact height of every block **before** rendering. Zero layout shift during AI streaming.
 
 ## The Problem
