@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pretext Markdown Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      padding: 24px 32px;
+      border-bottom: 1px solid #222;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .header h1 span { color: #7c3aed; }
+    .controls {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .toggle-btn {
+      background: #1a1a2e;
+      border: 1px solid #333;
+      color: #e0e0e0;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .toggle-btn:hover { border-color: #7c3aed; }
+    .toggle-btn.active {
+      background: #7c3aed;
+      border-color: #7c3aed;
+      color: #fff;
+    }
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: calc(100vh - 73px);
+    }
+    .panel {
+      padding: 24px;
+      overflow: auto;
+    }
+    .panel-left {
+      border-right: 1px solid #222;
+    }
+    .panel-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    textarea {
+      width: 100%;
+      height: calc(100% - 30px);
+      background: #1a1a1a;
+      color: #e0e0e0;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+    }
+    textarea:focus { border-color: #7c3aed; }
+    .rendered {
+      background: #fff;
+      color: #1a1a1a;
+      border-radius: 8px;
+      padding: 24px;
+      min-height: calc(100% - 60px);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      position: relative;
+    }
+    .rendered h1 { font-size: 32px; line-height: 40px; margin: 0 0 24px 0; font-weight: 700; }
+    .rendered h2 { font-size: 24px; line-height: 32px; margin: 0 0 24px 0; font-weight: 600; }
+    .rendered h3 { font-size: 20px; line-height: 28px; margin: 0 0 24px 0; font-weight: 600; }
+    .rendered p { margin: 0 0 16px 0; line-height: 24px; }
+    .rendered ul, .rendered ol { margin: 0 0 16px 0; padding-left: 24px; }
+    .rendered li { margin-bottom: 4px; line-height: 24px; }
+    .rendered pre {
+      background: #f6f8fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 16px;
+      margin: 0 0 16px 0;
+      overflow: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 20px;
+    }
+    .rendered code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
+    }
+    .rendered :not(pre) > code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .rendered blockquote {
+      margin: 0 0 16px 0;
+      padding: 8px 16px;
+      border-left: 4px solid #ddd;
+      color: #555;
+      font-style: italic;
+    }
+    .rendered hr {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin: 16px 0;
+    }
+    .rendered table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 0 0 16px 0;
+    }
+    .rendered th, .rendered td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .rendered th { font-weight: 600; background: #f9f9f9; }
+    .rendered strong { font-weight: 600; }
+    .rendered em { font-style: italic; }
+    .rendered a { color: #7c3aed; text-decoration: none; }
+    .rendered a:hover { text-decoration: underline; }
+    .height-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #888;
+    }
+    .height-val {
+      font-family: 'JetBrains Mono', monospace;
+      color: #7c3aed;
+      font-weight: 600;
+    }
+    .streaming-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #22c55e;
+    }
+    .streaming-indicator .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .cursor-blink {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: #7c3aed;
+      animation: blink 0.8s infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="header">
+    <h1><span>pretext</span>-markdown</h1>
+    <div class="controls">
+      <button id="streamToggle" class="toggle-btn" onclick="toggleStreaming()">
+        Streaming: OFF
+      </button>
+      <button class="toggle-btn" onclick="startStream()">
+        Simulate Stream
+      </button>
+      <button class="toggle-btn" onclick="resetDemo()">
+        Reset
+      </button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="panel panel-left">
+      <div class="panel-label">Markdown Input</div>
+      <textarea id="editor" spellcheck="false"></textarea>
+    </div>
+    <div class="panel panel-right">
+      <div class="height-bar">
+        <span>Pre-measured height: <span id="heightVal" class="height-val">0px</span></span>
+        <span id="streamStatus"></span>
+      </div>
+      <div class="panel-label">Rendered Output</div>
+      <div id="output" class="rendered"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- Lightweight block parser + measurer (mirrors the npm package logic) ---
+    function markdownToBlocksLight(md) {
+      const tokens = marked.lexer(md);
+      return tokens.filter(t => t.type !== 'space').map(t => {
+        switch (t.type) {
+          case 'paragraph': return { type: 'paragraph', text: t.text };
+          case 'heading': return { type: 'heading', level: t.depth, text: t.text };
+          case 'code': return { type: 'code', language: t.lang || '', code: t.text };
+          case 'list': return { type: 'list', ordered: t.ordered, items: t.items.map(i => ({ text: i.text })) };
+          case 'blockquote': return { type: 'blockquote', text: t.text };
+          case 'hr': return { type: 'hr' };
+          case 'table': return { type: 'table', header: t.header.map(c => c.text), rows: t.rows.map(r => r.map(c => c.text)) };
+          default: return t.text ? { type: 'paragraph', text: t.text || '' } : null;
+        }
+      }).filter(Boolean);
+    }
+
+    function measureBlockLight(block, maxWidth) {
+      const charWidth = 8.8; // ~16px Inter average
+      const charsPerLine = Math.max(1, Math.floor(maxWidth / charWidth));
+      switch (block.type) {
+        case 'paragraph': {
+          const lines = Math.max(1, Math.ceil((block.text || '').length / charsPerLine));
+          return lines * 24 + 16;
+        }
+        case 'heading': {
+          const sizes = { 1: 17.6, 2: 13.2, 3: 11, 4: 9.9, 5: 8.8, 6: 7.7 };
+          const cpl = Math.max(1, Math.floor(maxWidth / (sizes[block.level] || 8.8)));
+          const lh = { 1: 40, 2: 32, 3: 28, 4: 24, 5: 22, 6: 20 };
+          return Math.max(1, Math.ceil((block.text || '').length / cpl)) * (lh[block.level] || 28) + 24;
+        }
+        case 'code': {
+          const lines = (block.code || '').split('\n').length;
+          return lines * 20 + 32 + 16;
+        }
+        case 'list': {
+          return (block.items || []).reduce((sum, item) => {
+            const lines = Math.max(1, Math.ceil((item.text || '').length / (charsPerLine - 3)));
+            return sum + lines * 24 + 4;
+          }, 0) + 16;
+        }
+        case 'hr': return 32;
+        case 'table': return 40 + (block.rows || []).length * 36 + 16;
+        case 'blockquote': return 24 + 16 + 16;
+        default: return 24;
+      }
+    }
+
+    // --- State ---
+    let isStreaming = false;
+    let streamInterval = null;
+    let streamIndex = 0;
+    let streamContent = '';
+
+    const SAMPLE_MD = `# Pretext Markdown Demo
+
+This is a **pre-measured** markdown renderer. Every block's height is known before it hits the DOM.
+
+## Features
+
+- Zero layout shift during streaming
+- Incremental parsing (only current block re-measured)
+- Full markdown support: headings, lists, code, tables, blockquotes
+
+### Code Example
+
+\`\`\`typescript
+import { PretextMarkdown } from '@shipitandpray/pretext-markdown'
+
+function Chat({ content }: { content: string }) {
+  return (
+    <PretextMarkdown
+      content={content}
+      maxWidth={600}
+      streaming={true}
+      onHeightChange={h => scrollTo(h)}
+    />
+  )
+}
+\`\`\`
+
+## How It Works
+
+1. **Parse** markdown into typed blocks using \`marked.lexer()\`
+2. **Measure** each block with the correct font via \`@chenglou/pretext\`
+3. **Render** into pre-sized containers
+4. **Stream** with incremental parser that caches completed blocks
+
+> The key insight: don't re-parse the entire markdown on every token. Only the current (last) block is partial. All previous blocks are complete and their heights are cached.
+
+---
+
+| Metric | Target |
+|--------|--------|
+| Parse + measure 100 blocks | < 10ms |
+| Token append + re-measure | < 0.5ms |
+| Layout shift during streaming | 0px |
+
+That's it. Ship it.`;
+
+    const editor = document.getElementById('editor');
+    const output = document.getElementById('output');
+    const heightVal = document.getElementById('heightVal');
+    const streamStatus = document.getElementById('streamStatus');
+
+    editor.value = SAMPLE_MD;
+
+    function render(md) {
+      // Measure
+      const blocks = markdownToBlocksLight(md);
+      const maxW = output.clientWidth || 500;
+      const totalH = blocks.reduce((sum, b) => sum + measureBlockLight(b, maxW), 0);
+      heightVal.textContent = totalH + 'px';
+
+      // Render with marked
+      output.innerHTML = marked.parse(md);
+      output.style.minHeight = totalH + 'px';
+    }
+
+    editor.addEventListener('input', () => {
+      if (!isStreaming) render(editor.value);
+    });
+
+    function toggleStreaming() {
+      isStreaming = !isStreaming;
+      const btn = document.getElementById('streamToggle');
+      btn.textContent = `Streaming: ${isStreaming ? 'ON' : 'OFF'}`;
+      btn.classList.toggle('active', isStreaming);
+      if (!isStreaming) {
+        stopStream();
+        render(editor.value);
+      }
+    }
+
+    function startStream() {
+      if (!isStreaming) {
+        toggleStreaming();
+      }
+      stopStream();
+      streamContent = editor.value;
+      streamIndex = 0;
+      output.innerHTML = '';
+      heightVal.textContent = '0px';
+      streamStatus.innerHTML = '<span class="streaming-indicator"><span class="dot"></span>Streaming...</span>';
+
+      // Simulate token-by-token (word by word)
+      const words = streamContent.split(/(\s+)/);
+      let wordIdx = 0;
+      let accumulated = '';
+
+      streamInterval = setInterval(() => {
+        if (wordIdx >= words.length) {
+          stopStream();
+          streamStatus.innerHTML = '<span style="color:#22c55e">Done</span>';
+          return;
+        }
+        // Feed 1-3 words per tick for natural speed
+        const chunk = words.slice(wordIdx, wordIdx + 2).join('');
+        wordIdx += 2;
+        accumulated += chunk;
+
+        // Pre-measure
+        const blocks = markdownToBlocksLight(accumulated);
+        const maxW = output.clientWidth || 500;
+        const totalH = blocks.reduce((sum, b) => sum + measureBlockLight(b, maxW), 0);
+        heightVal.textContent = totalH + 'px';
+
+        // Set min-height BEFORE rendering (zero layout shift)
+        output.style.minHeight = totalH + 'px';
+        output.innerHTML = marked.parse(accumulated) + '<span class="cursor-blink"></span>';
+      }, 40);
+    }
+
+    function stopStream() {
+      if (streamInterval) {
+        clearInterval(streamInterval);
+        streamInterval = null;
+      }
+    }
+
+    function resetDemo() {
+      stopStream();
+      editor.value = SAMPLE_MD;
+      streamStatus.innerHTML = '';
+      if (isStreaming) toggleStreaming();
+      render(SAMPLE_MD);
+    }
+
+    // Initial render
+    render(SAMPLE_MD);
+  </script>
+</body>
+</html>

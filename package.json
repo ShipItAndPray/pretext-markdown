@@ -1,0 +1,60 @@
+{
+  "name": "@shipitandpray/pretext-markdown",
+  "version": "0.1.0",
+  "description": "Markdown renderer that knows the exact height of every block before rendering -- zero layout shift during AI streaming",
+  "author": "ShipItAndPray",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "@chenglou/pretext": ">=0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@chenglou/pretext": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "marked": ">=12.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "react": "^18.2.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShipItAndPray/pretext-markdown"
+  },
+  "keywords": [
+    "markdown",
+    "pretext",
+    "streaming",
+    "layout-shift",
+    "ai",
+    "llm",
+    "react"
+  ]
+}
